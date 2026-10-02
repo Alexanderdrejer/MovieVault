@@ -6,10 +6,10 @@ ASP.NET Core Web API (.NET 10) with EF Core on SQL Server, request logging with 
 
 | Name | AU-ID | Contribution |
 |---|---|---|
-| Frederik Pedersen | au765586 | |
-| Malthe Winther | au741125 | |
-| Andreas Østrem Pihl | au772149 | |
-| Alexander Kjærsgaard Drejer | au555707 | |
+| Frederik Mosekjær Staal Pedersen | au765586 | Project & solution setup, Docker Compose environment, `MoviesController` (full CRUD, Query 1 overview, Query 2 details, cast/location management), documentation and README. |
+| Malthe Winther | au741125 | Consolidated E/R models (Chen notation & logical schema diagrams), domain entity models (`Domain/Models`), EF Core `MovieVaultContext` Fluent API configuration, relationships, and deletion constraints. |
+| Andreas Østrem Pihl | au772149 | Initial database migration (`InitialCreate`), database seed data, request/response DTOs and validation rules, `TicketSalesController` (full CRUD, Query 4 ticket sales & revenue by movie, serializable capacity check). |
+| Alexander Kjærsgaard Drejer | au555707 | `ScreeningsController` (Query 3 upcoming screenings, cancellation logic), `CinemasController`, `ActorsController` (Query 5 actor performance), `LocationsController`, and Serilog request logging middleware to MongoDB. |
 
 ## Running the application
 
