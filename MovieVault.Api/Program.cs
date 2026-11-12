@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using MovieVault.Api.Data;
 using Scalar.AspNetCore;
 using Serilog;
+using Microsoft.AspNetCore.Identity;
+using MovieVault.Api.Domain.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,10 @@ builder.Host.UseSerilog((context, config) =>
 {
     config.ReadFrom.Configuration(context.Configuration);
 });
+
+builder.Services.AddIdentityCore<ApplicationUser>() // Jeg vil nu have brugere og de skal se ud som min APplicationUser.
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<MovieVaultContext>();
 
 builder.Services.AddDbContext<MovieVaultContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MovieVault")));

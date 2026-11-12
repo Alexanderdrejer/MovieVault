@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using MovieVault.Api.Domain.Models;
 
 namespace MovieVault.Api.Data;
 
-public class MovieVaultContext : DbContext
+public class MovieVaultContext : IdentityDbContext<ApplicationUser>
 {
     public MovieVaultContext(DbContextOptions<MovieVaultContext> options)
         : base(options)
