@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieVault.Api.Data;
+using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
 using Microsoft.AspNetCore.Identity;
@@ -27,6 +28,7 @@ builder.Services.AddIdentityCore<ApplicationUser>() // Jeg vil nu have brugere o
     .AddRoles<IdentityRole>() // Brugere kan nu have roller: Det er seederen der bestemmre rollerne, så de er på det her tidspunkt ikke derinde endnu. 
     .AddEntityFrameworkStores<MovieVaultContext>(); // .. Og alle mine rolelr og brugere skal gemmes i min database som du finde ri MovieVaultContext aka MovieVaultContext.cs.
     builder.Services.AddScoped<TokenService>(); 
+builder.Services.AddScoped<MovieAccessService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -48,7 +50,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Components ??= new();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes.Add("Bearer", new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Description = "Please enter token",
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            BearerFormat = "JWT",
+            Scheme = "bearer"
+        });
+        document.Security = [new OpenApiSecurityRequirement { [new OpenApiSecuritySchemeReference("Bearer", document)] = [] }];
+        return Task.CompletedTask;
+    });
+});
 
 var app = builder.Build();
 
@@ -100,7 +120,9 @@ using (var scope = app.Services.CreateScope())
     await IdentitySeeder.SeedUserAsync(userManager, "actor", demoPassword, Roles.Actor);
     await IdentitySeeder.SeedUserAsync(userManager, "director", demoPassword, Roles.Director);
     await IdentitySeeder.SeedUserAsync(userManager, "reviewer", demoPassword, Roles.Reviewer);
+    await IdentitySeeder.SeedUserAsync(userManager, "reviewer2", demoPassword, Roles.Reviewer);
     await IdentitySeeder.SeedUserAsync(userManager, "admin", demoPassword, Roles.Admin);
+    await IdentitySeeder.LinkDomainUsersAsync(context, userManager);
 
     var simulatorUserName = app.Configuration["Simulator:UserName"];
     var simulatorPassword = app.Configuration["Simulator:Password"];
@@ -115,6 +137,7 @@ app.MapOpenApi("/openapi/v1.json");
 app.MapScalarApiReference(options =>
 {
     options.Title = "MovieVault API";
+    options.AddPreferredSecuritySchemes("Bearer");
 });
 
 app.UseAuthentication();

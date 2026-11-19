@@ -24,6 +24,9 @@ public class MovieVaultContext : IdentityDbContext<ApplicationUser>
     public DbSet<MovieLocation> MovieLocations { get; set; }
     public DbSet<Screening> Screenings { get; set; }
     public DbSet<TicketSale> TicketSales { get; set; }
+    public DbSet<MediaOutlet> MediaOutlets { get; set; }
+    public DbSet<Reviewer> Reviewers { get; set; }
+    public DbSet<Review> Reviews { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -107,6 +110,48 @@ public class MovieVaultContext : IdentityDbContext<ApplicationUser>
             .HasOne(ts => ts.Screening)
             .WithMany(s => s.TicketSales)
             .HasForeignKey(ts => ts.ScreeningId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Actor>()
+            .HasOne(a => a.User)
+            .WithOne()
+            .HasForeignKey<Actor>(a => a.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Director>()
+            .HasOne(d => d.User)
+            .WithOne()
+            .HasForeignKey<Director>(d => d.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Reviewer>()
+            .HasOne(r => r.User)
+            .WithOne()
+            .HasForeignKey<Reviewer>(r => r.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Reviewer>()
+            .HasOne(r => r.MediaOutlet)
+            .WithMany(o => o.Reviewers)
+            .HasForeignKey(r => r.MediaOutletId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Movie)
+            .WithMany()
+            .HasForeignKey(r => r.MovieId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Reviewer)
+            .WithMany(rv => rv.Reviews)
+            .HasForeignKey(r => r.ReviewerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.MediaOutlet)
+            .WithMany(o => o.Reviews)
+            .HasForeignKey(r => r.MediaOutletId)
             .OnDelete(DeleteBehavior.Restrict);
 
         SeedData.Seed(modelBuilder);

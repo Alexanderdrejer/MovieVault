@@ -140,5 +140,22 @@ public static class SeedData
             new TicketSale { TicketSaleId = 16, ScreeningId = 11, SaleDateTime = new DateTime(2026, 9, 27, 10, 5, 0), TicketCount = 2, PricePerTicket = 120.00m },
             new TicketSale { TicketSaleId = 17, ScreeningId = 12, SaleDateTime = new DateTime(2026, 9, 28, 16, 40, 0), TicketCount = 3, PricePerTicket = 125.00m }
         );
+
+        modelBuilder.Entity<MediaOutlet>().HasData(
+            new MediaOutlet { MediaOutletId = 1, Name = "Aarhus Dagblad", OutletType = "newspaper", Website = "https://aarhusdagblad.example" },
+            new MediaOutlet { MediaOutletId = 2, Name = "Kanal Nord Kultur", OutletType = "tv", Website = "https://kanalnord.example" }
+        );
+
+        modelBuilder.Entity<Reviewer>().HasData(
+            new Reviewer { ReviewerId = 1, Name = "Rita Reel", MediaOutletId = 1 },
+            new Reviewer { ReviewerId = 2, Name = "Jonas Frame", MediaOutletId = 2 }
+        );
+
+        modelBuilder.Entity<Review>().HasData(
+            new Review { ReviewId = 1, MovieId = 1, ReviewerId = 1, MediaOutletId = 1, Headline = "A cold, beautiful crossing", Text = "Halvorsen delivers a slow-burning drama with a stunning lead performance.", Rating = 5, PublishedAt = new DateTime(2023, 11, 18, 8, 0, 0) },
+            new Review { ReviewId = 2, MovieId = 1, ReviewerId = 2, MediaOutletId = 2, Headline = "Gorgeous but overlong", Text = "The landscapes impress, but the third act drags.", Rating = 3, PublishedAt = new DateTime(2023, 11, 19, 20, 30, 0) },
+            new Review { ReviewId = 3, MovieId = 3, ReviewerId = 1, MediaOutletId = 1, Headline = "Quiet and sharp", Text = "A small family story told with real wit.", Rating = 4, PublishedAt = new DateTime(2022, 9, 24, 9, 15, 0) },
+            new Review { ReviewId = 4, MovieId = 4, ReviewerId = 2, MediaOutletId = 2, Headline = "Lanterns that glow", Text = "Tanaka balances spectacle and intimacy.", Rating = 4, PublishedAt = new DateTime(2024, 2, 10, 19, 0, 0) }
+        );
     }
 }

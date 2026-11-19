@@ -1,28 +1,37 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieVault.Api.Data;
+using MovieVault.Api.Domain;
 using MovieVault.Api.Domain.DTOs;
+using MovieVault.Api.Services;
 using MovieVault.Api.Domain.Models;
 
 namespace MovieVault.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class ScreeningsController : ControllerBase
 {
     private readonly MovieVaultContext _context;
+    private readonly MovieAccessService _access;
 
-    public ScreeningsController(MovieVaultContext context)
+    public ScreeningsController(MovieVaultContext context, MovieAccessService access)
     {
         _context = context;
+        _access = access;
     }
 
     [HttpGet("upcoming")]
     [ProducesResponseType(typeof(List<ScreeningDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ScreeningDto>>> GetUpcomingScreenings()
     {
+        var allowed = await _access.GetAllowedMovieIdsAsync(User);
+
         return await _context.Screenings
             .Where(s => s.StartsAt >= DateTime.Now && !s.IsCancelled)
+            .Where(s => allowed == null || allowed.Contains(s.MovieId))
             .OrderBy(s => s.StartsAt)
             .Select(ScreeningDto.Projection)
             .ToListAsync();
@@ -43,9 +52,15 @@ public class ScreeningsController : ControllerBase
             return NotFound();
         }
 
+        if (!await _access.CanAccessMovieAsync(User, screening.MovieId))
+        {
+            return Forbid();
+        }
+
         return screening;
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(typeof(ScreeningDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -90,6 +105,7 @@ public class ScreeningsController : ControllerBase
         return CreatedAtAction(nameof(GetScreening), new { id = screening.ScreeningId }, created);
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -131,6 +147,7 @@ public class ScreeningsController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

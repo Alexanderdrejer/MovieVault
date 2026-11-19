@@ -1,28 +1,37 @@
 using System.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieVault.Api.Data;
+using MovieVault.Api.Domain;
 using MovieVault.Api.Domain.DTOs;
+using MovieVault.Api.Services;
 using MovieVault.Api.Domain.Models;
 
 namespace MovieVault.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class TicketSalesController : ControllerBase
 {
     private readonly MovieVaultContext _context;
+    private readonly MovieAccessService _access;
 
-    public TicketSalesController(MovieVaultContext context)
+    public TicketSalesController(MovieVaultContext context, MovieAccessService access)
     {
         _context = context;
+        _access = access;
     }
 
     [HttpGet]
     [ProducesResponseType(typeof(List<TicketSaleDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<TicketSaleDto>>> GetTicketSales()
     {
+        var allowed = await _access.GetAllowedMovieIdsAsync(User);
+
         return await _context.TicketSales
+            .Where(ts => allowed == null || allowed.Contains(ts.Screening.MovieId))
             .OrderBy(ts => ts.TicketSaleId)
             .Select(TicketSaleDto.Projection)
             .ToListAsync();
@@ -43,9 +52,20 @@ public class TicketSalesController : ControllerBase
             return NotFound();
         }
 
+        var movieId = await _context.TicketSales
+            .Where(ts => ts.TicketSaleId == id)
+            .Select(ts => ts.Screening.MovieId)
+            .FirstAsync();
+
+        if (!await _access.CanAccessMovieAsync(User, movieId))
+        {
+            return Forbid();
+        }
+
         return ticketSale;
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(typeof(TicketSaleDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -109,6 +129,7 @@ public class TicketSalesController : ControllerBase
         return CreatedAtAction(nameof(GetTicketSale), new { id = ticketSale.TicketSaleId }, created);
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -145,6 +166,7 @@ public class TicketSalesController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
