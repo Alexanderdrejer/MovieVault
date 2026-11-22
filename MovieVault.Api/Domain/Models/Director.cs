@@ -17,5 +17,10 @@ public class Director
     [MaxLength(60)]
     public string? Nationality { get; set; }
 
+    [MaxLength(450)]
+    public string? UserId { get; set; }
+
+    public ApplicationUser? User { get; set; }
+
     public ICollection<Movie> Movies { get; set; } = new List<Movie>();
 }

@@ -1,19 +1,25 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieVault.Api.Data;
+using MovieVault.Api.Domain;
 using MovieVault.Api.Domain.DTOs;
+using MovieVault.Api.Services;
 
 namespace MovieVault.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class CinemasController : ControllerBase
 {
     private readonly MovieVaultContext _context;
+    private readonly MovieAccessService _access;
 
-    public CinemasController(MovieVaultContext context)
+    public CinemasController(MovieVaultContext context, MovieAccessService access)
     {
         _context = context;
+        _access = access;
     }
 
     [HttpGet]
@@ -52,8 +58,11 @@ public class CinemasController : ControllerBase
             return NotFound();
         }
 
+        var allowed = await _access.GetAllowedMovieIdsAsync(User);
+
         return await _context.Screenings
             .Where(s => s.Screen.CinemaId == id)
+            .Where(s => allowed == null || allowed.Contains(s.MovieId))
             .OrderBy(s => s.StartsAt)
             .Select(ScreeningDto.Projection)
             .ToListAsync();

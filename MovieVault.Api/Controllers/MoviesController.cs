@@ -1,27 +1,36 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieVault.Api.Data;
+using MovieVault.Api.Domain;
 using MovieVault.Api.Domain.DTOs;
+using MovieVault.Api.Services;
 using MovieVault.Api.Domain.Models;
 
 namespace MovieVault.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class MoviesController : ControllerBase
 {
     private readonly MovieVaultContext _context;
+    private readonly MovieAccessService _access;
 
-    public MoviesController(MovieVaultContext context)
+    public MoviesController(MovieVaultContext context, MovieAccessService access)
     {
         _context = context;
+        _access = access;
     }
 
     [HttpGet]
     [ProducesResponseType(typeof(List<MovieOverviewDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<MovieOverviewDto>>> GetMovies()
     {
+        var allowed = await _access.GetAllowedMovieIdsAsync(User);
+
         return await _context.Movies
+            .Where(m => allowed == null || allowed.Contains(m.MovieId))
             .OrderBy(m => m.Title)
             .Select(m => new MovieOverviewDto
             {
@@ -47,6 +56,11 @@ public class MoviesController : ControllerBase
             return NotFound();
         }
 
+        if (!await _access.CanAccessMovieAsync(User, id))
+        {
+            return Forbid();
+        }
+
         return movie;
     }
 
@@ -60,6 +74,11 @@ public class MoviesController : ControllerBase
             return NotFound();
         }
 
+        if (!await _access.CanAccessMovieAsync(User, id))
+        {
+            return Forbid();
+        }
+
         return await _context.Screenings
             .Where(s => s.MovieId == id)
             .OrderBy(s => s.StartsAt)
@@ -67,11 +86,15 @@ public class MoviesController : ControllerBase
             .ToListAsync();
     }
 
+    [Authorize(Roles = $"{Roles.Actor},{Roles.Director},{Roles.Admin}")]
     [HttpGet("ticket-sales")]
     [ProducesResponseType(typeof(List<MovieTicketSalesDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<MovieTicketSalesDto>>> GetTicketSalesByMovie()
     {
+        var allowed = await _access.GetAllowedMovieIdsAsync(User);
+
         return await _context.TicketSales
+            .Where(ts => allowed == null || allowed.Contains(ts.Screening.MovieId))
             .GroupBy(ts => new { ts.Screening.MovieId, ts.Screening.Movie.Title })
             .Select(g => new MovieTicketSalesDto
             {
@@ -84,6 +107,7 @@ public class MoviesController : ControllerBase
             .ToListAsync();
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(typeof(MovieDetailsDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -104,6 +128,7 @@ public class MoviesController : ControllerBase
         return CreatedAtAction(nameof(GetMovie), new { id = movie.MovieId }, await GetMovieDetails(movie.MovieId));
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -131,6 +156,7 @@ public class MoviesController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -157,6 +183,7 @@ public class MoviesController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost("{id:int}/actors")]
     [ProducesResponseType(typeof(CastMemberDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -204,6 +231,7 @@ public class MoviesController : ControllerBase
         return CreatedAtAction(nameof(GetMovie), new { id }, castMember);
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpDelete("{id:int}/actors/{actorId:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -221,6 +249,7 @@ public class MoviesController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost("{id:int}/locations")]
     [ProducesResponseType(typeof(FilmingLocationDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -269,6 +298,7 @@ public class MoviesController : ControllerBase
         return CreatedAtAction(nameof(GetMovie), new { id }, filmingLocation);
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpDelete("{id:int}/locations/{locationId:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

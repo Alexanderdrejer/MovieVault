@@ -38,4 +38,31 @@ public static class IdentitySeeder // seed mit shit til databasen.
             await userManager.AddToRoleAsync(user, role);
         }
     }
+
+    public static async Task LinkDomainUsersAsync(MovieVaultContext context, UserManager<ApplicationUser> userManager)
+    {
+        var actorUser = await userManager.FindByNameAsync("actor");
+        var directorUser = await userManager.FindByNameAsync("director");
+        var reviewerUser = await userManager.FindByNameAsync("reviewer");
+        var reviewer2User = await userManager.FindByNameAsync("reviewer2");
+
+        var actor = await context.Actors.FindAsync(1);
+        var director = await context.Directors.FindAsync(1);
+        var reviewer = await context.Reviewers.FindAsync(1);
+        var reviewer2 = await context.Reviewers.FindAsync(2);
+
+        if (actor != null && actorUser != null)
+            actor.UserId = actorUser.Id;
+
+        if (director != null && directorUser != null)
+            director.UserId = directorUser.Id;
+
+        if (reviewer != null && reviewerUser != null)
+            reviewer.UserId = reviewerUser.Id;
+
+        if (reviewer2 != null && reviewer2User != null)
+            reviewer2.UserId = reviewer2User.Id;
+
+        await context.SaveChangesAsync();
+    }
 }

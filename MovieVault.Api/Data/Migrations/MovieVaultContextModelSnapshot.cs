@@ -179,7 +179,15 @@ namespace MovieVault.Api.Data.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("nvarchar(60)");
 
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("ActorId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Actors");
 
@@ -390,7 +398,15 @@ namespace MovieVault.Api.Data.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("nvarchar(60)");
 
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("DirectorId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Directors");
 
@@ -488,6 +504,49 @@ namespace MovieVault.Api.Data.Migrations
                             Country = "Italy",
                             LocationType = "street",
                             Name = "Ponte Vecchio Approach"
+                        });
+                });
+
+            modelBuilder.Entity("MovieVault.Api.Domain.Models.MediaOutlet", b =>
+                {
+                    b.Property<int>("MediaOutletId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MediaOutletId"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("OutletType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Website")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("MediaOutletId");
+
+                    b.ToTable("MediaOutlets");
+
+                    b.HasData(
+                        new
+                        {
+                            MediaOutletId = 1,
+                            Name = "Aarhus Dagblad",
+                            OutletType = "newspaper",
+                            Website = "https://aarhusdagblad.example"
+                        },
+                        new
+                        {
+                            MediaOutletId = 2,
+                            Name = "Kanal Nord Kultur",
+                            OutletType = "tv",
+                            Website = "https://kanalnord.example"
                         });
                 });
 
@@ -882,6 +941,141 @@ namespace MovieVault.Api.Data.Migrations
                             MovieId = 5,
                             ProductionBudget = 27400000.00m,
                             ShootingStartDate = new DateTime(2025, 2, 3, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
+                });
+
+            modelBuilder.Entity("MovieVault.Api.Domain.Models.Review", b =>
+                {
+                    b.Property<int>("ReviewId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReviewId"));
+
+                    b.Property<string>("Headline")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("MediaOutletId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MovieId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PublishedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReviewerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.HasKey("ReviewId");
+
+                    b.HasIndex("MediaOutletId");
+
+                    b.HasIndex("MovieId");
+
+                    b.HasIndex("ReviewerId");
+
+                    b.ToTable("Reviews");
+
+                    b.HasData(
+                        new
+                        {
+                            ReviewId = 1,
+                            Headline = "A cold, beautiful crossing",
+                            MediaOutletId = 1,
+                            MovieId = 1,
+                            PublishedAt = new DateTime(2023, 11, 18, 8, 0, 0, 0, DateTimeKind.Unspecified),
+                            Rating = 5,
+                            ReviewerId = 1,
+                            Text = "Halvorsen delivers a slow-burning drama with a stunning lead performance."
+                        },
+                        new
+                        {
+                            ReviewId = 2,
+                            Headline = "Gorgeous but overlong",
+                            MediaOutletId = 2,
+                            MovieId = 1,
+                            PublishedAt = new DateTime(2023, 11, 19, 20, 30, 0, 0, DateTimeKind.Unspecified),
+                            Rating = 3,
+                            ReviewerId = 2,
+                            Text = "The landscapes impress, but the third act drags."
+                        },
+                        new
+                        {
+                            ReviewId = 3,
+                            Headline = "Quiet and sharp",
+                            MediaOutletId = 1,
+                            MovieId = 3,
+                            PublishedAt = new DateTime(2022, 9, 24, 9, 15, 0, 0, DateTimeKind.Unspecified),
+                            Rating = 4,
+                            ReviewerId = 1,
+                            Text = "A small family story told with real wit."
+                        },
+                        new
+                        {
+                            ReviewId = 4,
+                            Headline = "Lanterns that glow",
+                            MediaOutletId = 2,
+                            MovieId = 4,
+                            PublishedAt = new DateTime(2024, 2, 10, 19, 0, 0, 0, DateTimeKind.Unspecified),
+                            Rating = 4,
+                            ReviewerId = 2,
+                            Text = "Tanaka balances spectacle and intimacy."
+                        });
+                });
+
+            modelBuilder.Entity("MovieVault.Api.Domain.Models.Reviewer", b =>
+                {
+                    b.Property<int>("ReviewerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReviewerId"));
+
+                    b.Property<int>("MediaOutletId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ReviewerId");
+
+                    b.HasIndex("MediaOutletId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
+
+                    b.ToTable("Reviewers");
+
+                    b.HasData(
+                        new
+                        {
+                            ReviewerId = 1,
+                            MediaOutletId = 1,
+                            Name = "Rita Reel"
+                        },
+                        new
+                        {
+                            ReviewerId = 2,
+                            MediaOutletId = 2,
+                            Name = "Jonas Frame"
                         });
                 });
 
@@ -1423,6 +1617,26 @@ namespace MovieVault.Api.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MovieVault.Api.Domain.Models.Actor", b =>
+                {
+                    b.HasOne("MovieVault.Api.Domain.Models.ApplicationUser", "User")
+                        .WithOne()
+                        .HasForeignKey("MovieVault.Api.Domain.Models.Actor", "UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MovieVault.Api.Domain.Models.Director", b =>
+                {
+                    b.HasOne("MovieVault.Api.Domain.Models.ApplicationUser", "User")
+                        .WithOne()
+                        .HasForeignKey("MovieVault.Api.Domain.Models.Director", "UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MovieVault.Api.Domain.Models.Movie", b =>
                 {
                     b.HasOne("MovieVault.Api.Domain.Models.Director", "Director")
@@ -1487,6 +1701,51 @@ namespace MovieVault.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Movie");
+                });
+
+            modelBuilder.Entity("MovieVault.Api.Domain.Models.Review", b =>
+                {
+                    b.HasOne("MovieVault.Api.Domain.Models.MediaOutlet", "MediaOutlet")
+                        .WithMany("Reviews")
+                        .HasForeignKey("MediaOutletId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MovieVault.Api.Domain.Models.Movie", "Movie")
+                        .WithMany()
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MovieVault.Api.Domain.Models.Reviewer", "Reviewer")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ReviewerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MediaOutlet");
+
+                    b.Navigation("Movie");
+
+                    b.Navigation("Reviewer");
+                });
+
+            modelBuilder.Entity("MovieVault.Api.Domain.Models.Reviewer", b =>
+                {
+                    b.HasOne("MovieVault.Api.Domain.Models.MediaOutlet", "MediaOutlet")
+                        .WithMany("Reviewers")
+                        .HasForeignKey("MediaOutletId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MovieVault.Api.Domain.Models.ApplicationUser", "User")
+                        .WithOne()
+                        .HasForeignKey("MovieVault.Api.Domain.Models.Reviewer", "UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("MediaOutlet");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MovieVault.Api.Domain.Models.Screen", b =>
@@ -1561,6 +1820,13 @@ namespace MovieVault.Api.Data.Migrations
                     b.Navigation("MovieLocations");
                 });
 
+            modelBuilder.Entity("MovieVault.Api.Domain.Models.MediaOutlet", b =>
+                {
+                    b.Navigation("Reviewers");
+
+                    b.Navigation("Reviews");
+                });
+
             modelBuilder.Entity("MovieVault.Api.Domain.Models.Movie", b =>
                 {
                     b.Navigation("MovieActors");
@@ -1577,6 +1843,11 @@ namespace MovieVault.Api.Data.Migrations
                     b.Navigation("Movies");
 
                     b.Navigation("Studios");
+                });
+
+            modelBuilder.Entity("MovieVault.Api.Domain.Models.Reviewer", b =>
+                {
+                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("MovieVault.Api.Domain.Models.Screen", b =>

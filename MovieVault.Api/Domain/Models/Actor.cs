@@ -17,6 +17,11 @@ public class Actor
     [MaxLength(60)]
     public string? Nationality { get; set; }
 
+    [MaxLength(450)]
+    public string? UserId { get; set; }
+
+    public ApplicationUser? User { get; set; }
+
     [MaxLength(20)]
     public string? Gender { get; set; }
 
