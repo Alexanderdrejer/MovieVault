@@ -4,6 +4,17 @@ ASP.NET Core Web API (.NET 10) with EF Core on SQL Server, ASP.NET Core Identity
 
 ## Group members and contributions
 
+### Assignment 4
+
+| Name | AU-ID | Contribution |
+|---|---|---|
+| Frederik Mosekjær Staal Pedersen | au765586 | |
+| Malthe Winther | au741125 | |
+| Andreas Østrem Pihl | au772149 | |
+| Alexander Kjærsgaard Drejer | au555707 | Identity and JWT: ASP.NET Core Identity users and roles, seeded demo accounts, login endpoint, JWT creation and validation (401/403). Movie and query access: Identity connections for actors and directors, role-based authorization on the controllers, and Actor/Director movie filtering. |
+
+### Assignment 3
+
 | Name | AU-ID | Contribution |
 |---|---|---|
 | Frederik Mosekjær Staal Pedersen | au765586 | Project & solution setup, Docker Compose environment, `MoviesController` (full CRUD, Query 1 overview, Query 2 details, cast/location management), documentation and README. |
