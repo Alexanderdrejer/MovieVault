@@ -12,6 +12,9 @@ using MovieVault.Api.Services;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +32,11 @@ builder.Services.AddIdentityCore<ApplicationUser>() // Jeg vil nu have brugere o
     .AddEntityFrameworkStores<MovieVaultContext>(); // .. Og alle mine rolelr og brugere skal gemmes i min database som du finde ri MovieVaultContext aka MovieVaultContext.cs.
     builder.Services.AddScoped<TokenService>(); 
 builder.Services.AddScoped<MovieAccessService>();
+
+var logDatabaseUrl = new MongoUrl(builder.Configuration["Serilog:WriteTo:0:Args:databaseUrl"]);
+builder.Services.AddSingleton(new MongoClient(logDatabaseUrl)
+    .GetDatabase(logDatabaseUrl.DatabaseName)
+    .GetCollection<BsonDocument>(builder.Configuration["Serilog:WriteTo:0:Args:collectionName"]));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -79,14 +87,20 @@ app.Use(async (context, next) =>
     var method = context.Request.Method;
     if (HttpMethods.IsPost(method) || HttpMethods.IsPut(method) || HttpMethods.IsDelete(method))
     {
+        var isPublicEndpoint = context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() != null;
+        var username = !isPublicEndpoint && context.User.Identity?.IsAuthenticated == true
+            ? context.User.Identity.Name
+            : "anonymous";
+
         var logInfo = new
         {
-            Method = method,
-            Path = context.Request.Path.Value,
-            StatusCode = context.Response.StatusCode,
-            Timestamp = DateTime.UtcNow
+            Username = username,
+            Timestamp = DateTime.UtcNow,
+            RequestType = method,
+            Route = context.Request.Path.Value,
+            StatusCode = context.Response.StatusCode
         };
-        app.Logger.LogInformation("Change request {@LogInfo}", logInfo);
+        app.Logger.LogInformation("Request log {@LogInfo}", logInfo);
     }
 });
 
