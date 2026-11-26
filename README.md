@@ -8,9 +8,9 @@ ASP.NET Core Web API (.NET 10) with EF Core on SQL Server, ASP.NET Core Identity
 
 | Name | AU-ID | Contribution |
 |---|---|---|
-| Frederik Mosekjær Staal Pedersen | au765586 | |
-| Malthe Winther | au741125 | |
-| Andreas Østrem Pihl | au772149 | |
+| Frederik Mosekjær Staal Pedersen | au765586 | Reviews and EF Core: media outlet, reviewer and review entities, relationships, DTOs and migration, public review reads with filtering, ownership checks. Background service: ticket sale simulator worker with HttpClient, periodic execution, login and failure handling. Ticket sales: validation of quantity, price and capacity for simulated sales. |
+| Malthe Winther | au741125 | MongoDB and logging: structured request logs with username convention through Serilog to MongoDB. Log endpoint: Admin-only `GET /api/logs` with combinable filters. |
+| Andreas Østrem Pihl | au772149 | Postman: Movie controller collection and environment template with 401/403 and Admin/Actor tests. Docker: Dockerfiles for API and simulator, Compose setup with networking, environment configuration, healthchecks and persistent volumes. |
 | Alexander Kjærsgaard Drejer | au555707 | Identity and JWT: ASP.NET Core Identity users and roles, seeded demo accounts, login endpoint, JWT creation and validation (401/403). Movie and query access: Identity connections for actors and directors, role-based authorization on the controllers, and Actor/Director movie filtering. |
 
 ### Assignment 3
